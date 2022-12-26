@@ -26,7 +26,7 @@ data class CompanyDatabaseEntity(
         if (previousQuarter_GrossProfit == null || recentQuarter_GrossProfit == null) return null
         else {
             val result = (recentQuarter_GrossProfit - previousQuarter_GrossProfit)/previousQuarter_GrossProfit
-            Log.d("CALCULATION CONTROL", ticker.toUpperCase() + ": "+ "getGrossProfitChangeWithPreviousQuarter: " + result)
+            Log.d("CALCULATION CONTROL", ticker.uppercase() + ": "+ "getGrossProfitChangeWithPreviousQuarter: " + result)
             return result.toDouble()
         }
     }
@@ -35,7 +35,7 @@ data class CompanyDatabaseEntity(
         if (previousQuarter_NetIncome == null || recentQuarter_NetIncome == null) return null
         else {
             val result = (recentQuarter_NetIncome - previousQuarter_NetIncome)/previousQuarter_NetIncome
-            Log.d("CALCULATION CONTROL", ticker.toUpperCase() + ": "+ "getNetIncomeChangeWithPreviousQuarter: " + result)
+            Log.d("CALCULATION CONTROL", ticker.uppercase() + ": "+ "getNetIncomeChangeWithPreviousQuarter: " + result)
             return result.toDouble()
         }
     }
@@ -44,7 +44,7 @@ data class CompanyDatabaseEntity(
         if (recentQuarter_GrossProfit == null || today_OutstandingShares == null || today_SharePrice == null) return null
         else {
             val result = (recentQuarter_GrossProfit/today_OutstandingShares/today_SharePrice * 100)
-            Log.d("CALCULATION CONTROL", ticker.toUpperCase() + ": "+ "getGrossProfitInRecentQuarterInCentPer1DollarSpentOnThemToday: " + result)
+            Log.d("CALCULATION CONTROL", ticker.uppercase() + ": "+ "getGrossProfitInRecentQuarterInCentPer1DollarSpentOnThemToday: " + result)
             return result
         }
     }
@@ -53,7 +53,7 @@ data class CompanyDatabaseEntity(
         if (recentQuarter_NetIncome == null || today_OutstandingShares == null || today_SharePrice == null) return null
         else {
             val result = (recentQuarter_NetIncome/today_OutstandingShares/today_SharePrice * 100)
-            Log.d("CALCULATION CONTROL", ticker.toUpperCase() + ": "+ "getNetIncometInRecentQuarterInCentPer1DollarSpentOnThemToday: " + result)
+            Log.d("CALCULATION CONTROL", ticker.uppercase() + ": "+ "getNetIncometInRecentQuarterInCentPer1DollarSpentOnThemToday: " + result)
             return result
         }
     }

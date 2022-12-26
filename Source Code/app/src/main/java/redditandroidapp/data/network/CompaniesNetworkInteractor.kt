@@ -43,6 +43,8 @@ class CompaniesNetworkInteractor @Inject constructor(var apiClient: ApiClient) {
 
     fun setUpdateError(t: Throwable?) {
         updateError.postValue(true)
-        if (t != null) { Log.e("Network Error: ", t.message) }
+        t?.message?.let {
+            Log.e("Network Error: ", it)
+        }
     }
 }

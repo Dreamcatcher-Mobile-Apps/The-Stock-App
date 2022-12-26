@@ -75,14 +75,14 @@ class CompaniesListAdapter(val context: Context) : RecyclerView.Adapter<ViewHold
         val company = companiesList[position]
 
         // Prepare fetched data
-        val ticker = company.ticker.toUpperCase()
+        val ticker = company.ticker.uppercase()
 
         // Set the circle random colour
         val rnd = Random()
         holder.picture.setColorFilter(Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256)))
 
         // Set the letter in circle
-        holder.tickerLetter.text = ticker.first().toUpperCase().toString()
+        holder.tickerLetter.text = ticker.first().uppercase().toString()
 
         // Set data within the holder
         holder.ticker.text = ticker

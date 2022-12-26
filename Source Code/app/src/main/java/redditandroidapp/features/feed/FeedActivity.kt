@@ -10,29 +10,26 @@ import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.loading_badge.*
 import redditandroidapp.R
 import redditandroidapp.data.database.CompanyDatabaseEntity
 import redditandroidapp.data.utils.DataFetchingCallback
-import redditandroidapp.injection.RedditAndroidApp
-import javax.inject.Inject
 
 
 // Main ('feed') view
+@AndroidEntryPoint
 class FeedActivity : AppCompatActivity(), DataFetchingCallback {
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private lateinit var viewModel: FeedViewModel
+    private val viewModel: FeedViewModel by viewModels()
     private lateinit var companiesListAdapter: CompaniesListAdapter
     var isLoadingMoreItems: Boolean = false
     val activity = this
@@ -40,17 +37,10 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
     private val STATE_LOADING_ERROR = "STATE_LOADING_ERROR"
     private val STATE_CONTENT_LOADED = "STATE_CONTENT_LOADED"
 
-    init {
-        RedditAndroidApp.mainComponent.inject(this)
-    }
-
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        // Initialize ViewModel
-        viewModel = ViewModelProviders.of(this, viewModelFactory).get(FeedViewModel::class.java)
 
         // Initialize RecyclerView (feed items)
         setupRecyclerView()

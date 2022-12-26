@@ -46,7 +46,7 @@ class CompaniesRepository @Inject constructor(private val networkInteractor: Com
 
     fun addNewCompany(ticker: String, callback: DataFetchingCallback?) {
 
-        val formattedTicker = ticker.toUpperCase()
+        val formattedTicker = ticker.uppercase()
 
 
         // First API call
