@@ -32,7 +32,6 @@ dependencies {
     def dagger2_version = '2.27'
     def javax_annotation_version = '3.1.1'
     def room_version = '2.2.5'
-    def mockito_core_version = '2.19.0'
     def mockito_inline_version = '2.13.0'
     def core_testing_version = '1.1.1'
     def retrofit_version = '2.4.0'
@@ -43,9 +42,6 @@ dependencies {
     def glide_version = '4.11.0'
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-
-    // Kotlin standard library
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.7.20'
 
     // Lifecycle components
     implementation "android.arch.lifecycle:extensions:$lifecycle_version"
@@ -70,7 +66,6 @@ dependencies {
     kapt "androidx.room:room-compiler:$room_version"
 
     // Unit Testing
-    testImplementation "org.mockito:mockito-core:$mockito_core_version"
     testImplementation "org.mockito:mockito-inline:$mockito_inline_version"
     testImplementation "android.arch.core:core-testing:$core_testing_version"
 
