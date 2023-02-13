@@ -25,14 +25,12 @@ import thestockapp.data.database.CompanyDatabaseEntity
 import thestockapp.data.utils.DataFetchingCallback
 
 
-// Main ('feed') view
 @AndroidEntryPoint
 class FeedActivity : AppCompatActivity(), DataFetchingCallback {
 
     private val viewModel: FeedViewModel by viewModels()
     private lateinit var companiesListAdapter: CompaniesListAdapter
     var isLoadingMoreItems: Boolean = false
-    val activity = this
 
     private val STATE_LOADING_ERROR = "STATE_LOADING_ERROR"
     private val STATE_CONTENT_LOADED = "STATE_CONTENT_LOADED"
@@ -60,16 +58,25 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
 
     private fun setupSortingOptions() {
         val optionsList = SortingOption.values().map { it.toString() }
-        val adapter: ArrayAdapter<String> = ArrayAdapter(this, android.R.layout.simple_spinner_item, optionsList)
+        val adapter: ArrayAdapter<String> =
+            ArrayAdapter(this, android.R.layout.simple_spinner_item, optionsList)
         sorting_spinner.adapter = adapter
         sorting_spinner.onItemSelectedListener = (object : OnItemSelectedListener {
-            override fun onItemSelected(parentView: AdapterView<*>?, selectedItemView: View, position: Int, id: Long) {
+            override fun onItemSelected(
+                parentView: AdapterView<*>?,
+                selectedItemView: View,
+                position: Int,
+                id: Long
+            ) {
                 // Todo: Refactor into using arguments, not seletedItem
                 val sortingOption = SortingOption.valueOf(sorting_spinner.selectedItem as String)
                 companiesListAdapter.sortItems(sortingOption)
 
                 // Todo: Not good solution when we fetch data back from the adapter - refactor in the future.
-                updateAverageValues(companiesListAdapter.getCurrentlyDisplayedItems(), sortingOption)
+                updateAverageValues(
+                    companiesListAdapter.getCurrentlyDisplayedItems(),
+                    sortingOption
+                )
             }
 
             override fun onNothingSelected(parentView: AdapterView<*>?) {}
@@ -77,6 +84,7 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
     }
 
     private fun setupAddCompanyButton() {
+        val activity = this
         add_company_button.setOnClickListener {
             val ticker = add_company_input.text.toString()
             viewModel.addCompany(ticker, activity)
@@ -85,64 +93,63 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
     }
 
     private fun hideKeyboard() {
-        val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(add_company_input.getWindowToken(), 0)
+        (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+            .hideSoftInputFromWindow(add_company_input.windowToken, 0)
     }
 
-    private fun updateAverageValues(values: List<CompanyDatabaseEntity>, sortingOption: SortingOption) {
+    private fun updateAverageValues(
+        values: List<CompanyDatabaseEntity>,
+        sortingOption: SortingOption
+    ) {
         when (sortingOption) {
             SortingOption.GROSS_PROFIT_LAST_PERIOD -> {
-                val averageGrossProfitPerDollar = calculateAverageValue(values, SortingOption.GROSS_PROFIT_LAST_PERIOD)
-                average.text = getString(R.string.average_gross_profit_per_dollar, String.format("%.4f", averageGrossProfitPerDollar))
+                val averageGrossProfitPerDollar =
+                    viewModel.calculateAverageValue(values, SortingOption.GROSS_PROFIT_LAST_PERIOD)
+                average.text = getString(
+                    R.string.average_gross_profit_per_dollar,
+                    String.format("%.4f", averageGrossProfitPerDollar)
+                )
 
-                val averageGrossProfitPerDollar_positive = calculateAverageValue_positiveOnly(values, SortingOption.GROSS_PROFIT_LAST_PERIOD)
-                average_positive.text = getString(R.string.average_positive_gross_profit_per_dollar, String.format("%.4f", averageGrossProfitPerDollar_positive))
+                val averageGrossProfitPerDollar_positive = viewModel.calculateAverageValue_positiveOnly(
+                    values,
+                    SortingOption.GROSS_PROFIT_LAST_PERIOD
+                )
+                average_positive.text = getString(
+                    R.string.average_positive_gross_profit_per_dollar,
+                    String.format("%.4f", averageGrossProfitPerDollar_positive)
+                )
             }
             SortingOption.NET_INCOME_LAST_PERIOD -> {
-                val averageNetIncomePerDollar = calculateAverageValue(values, SortingOption.NET_INCOME_LAST_PERIOD)
-                average.text = getString(R.string.average_net_income_per_dollar, String.format("%.4f", averageNetIncomePerDollar))
+                val averageNetIncomePerDollar =
+                    viewModel.calculateAverageValue(values, SortingOption.NET_INCOME_LAST_PERIOD)
+                average.text = getString(
+                    R.string.average_net_income_per_dollar,
+                    String.format("%.4f", averageNetIncomePerDollar)
+                )
 
-                val averageNetIncomePerDollar_positive = calculateAverageValue_positiveOnly(values, SortingOption.NET_INCOME_LAST_PERIOD)
-                average_positive.text = getString(R.string.average_positive_net_income_per_dollar, String.format("%.4f", averageNetIncomePerDollar_positive))
+                val averageNetIncomePerDollar_positive =
+                    viewModel.calculateAverageValue_positiveOnly(values, SortingOption.NET_INCOME_LAST_PERIOD)
+                average_positive.text = getString(
+                    R.string.average_positive_net_income_per_dollar,
+                    String.format("%.4f", averageNetIncomePerDollar_positive)
+                )
             }
             SortingOption.EPS_PER_1_DOLLAR_SPENT -> {
-                val averageEpsPerDollar = calculateAverageValue(values, SortingOption.EPS_PER_1_DOLLAR_SPENT)
-                average.text = getString(R.string.average_eps_per_dollar, String.format("%.4f", averageEpsPerDollar))
+                val averageEpsPerDollar =
+                    viewModel.calculateAverageValue(values, SortingOption.EPS_PER_1_DOLLAR_SPENT)
+                average.text = getString(
+                    R.string.average_eps_per_dollar,
+                    String.format("%.4f", averageEpsPerDollar)
+                )
 
-                val averageEpsPerDollar_positive = calculateAverageValue_positiveOnly(values, SortingOption.EPS_PER_1_DOLLAR_SPENT)
-                average_positive.text = getString(R.string.average_positive_eps_per_dollar, String.format("%.4f", averageEpsPerDollar_positive))
-            }
-            else -> {}
-        }
-    }
-
-    private fun calculateAverageValue_positiveOnly(companies: List<CompanyDatabaseEntity>, sortingOption: SortingOption): Float {
-        val positiveValues = companies.filter {
-            val value = when (sortingOption) {
-                SortingOption.GROSS_PROFIT_LAST_PERIOD -> it.getGrossProfitInRecentQuarterInCentPer1DollarSpentOnThemToday()
-                SortingOption.NET_INCOME_LAST_PERIOD -> it.getNetIncomeInRecentQuarterInCentPer1DollarSpentOnThemToday()
-                SortingOption.EPS_PER_1_DOLLAR_SPENT -> it.getEarningsPerSharePer1DollarSpentOnThemToday()
-            }
-            value != null && value > 0.0
-        }
-        return calculateAverageValue(positiveValues, sortingOption)
-    }
-
-    private fun calculateAverageValue(companies: List<CompanyDatabaseEntity>, sortingOption: SortingOption): Float {
-        var valuesAmount = 0
-        var sumPerDollar = 0.0
-        companies.forEach {
-            val value = when (sortingOption) {
-                SortingOption.GROSS_PROFIT_LAST_PERIOD -> it.getGrossProfitInRecentQuarterInCentPer1DollarSpentOnThemToday()
-                SortingOption.NET_INCOME_LAST_PERIOD -> it.getNetIncomeInRecentQuarterInCentPer1DollarSpentOnThemToday()
-                SortingOption.EPS_PER_1_DOLLAR_SPENT -> it.getEarningsPerSharePer1DollarSpentOnThemToday()
-            }
-            value?.let {
-                valuesAmount++
-                sumPerDollar += it
+                val averageEpsPerDollar_positive =
+                    viewModel.calculateAverageValue_positiveOnly(values, SortingOption.EPS_PER_1_DOLLAR_SPENT)
+                average_positive.text = getString(
+                    R.string.average_positive_eps_per_dollar,
+                    String.format("%.4f", averageEpsPerDollar_positive)
+                )
             }
         }
-        return (sumPerDollar / valuesAmount).toFloat()
     }
 
     private fun setupRecyclerView() {
@@ -151,35 +158,41 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
         companiesListAdapter = CompaniesListAdapter(this)
         main_feed_recyclerview.adapter = companiesListAdapter
 
+        val simpleItemTouchCallback: ItemTouchHelper.SimpleCallback =
+            object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+                override fun onMove(
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder,
+                    target: RecyclerView.ViewHolder
+                ): Boolean {
+                    return false
+                }
 
-        val simpleItemTouchCallback: ItemTouchHelper.SimpleCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
-            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
-                return false
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
+                    val ticker =
+                        companiesListAdapter.getCompanyIdByPosition(viewHolder.adapterPosition)
+                    viewModel.removeCompany(ticker)
+                    companiesListAdapter.itemRemoved(viewHolder.adapterPosition)
+                }
             }
-
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
-                val ticker = companiesListAdapter.getCompanyIdByPosition(viewHolder.adapterPosition)
-                viewModel.removeCompany(ticker)
-                companiesListAdapter.itemRemoved(viewHolder.adapterPosition)
-            }
-        }
         val itemTouchHelper = ItemTouchHelper(simpleItemTouchCallback)
         itemTouchHelper.attachToRecyclerView(main_feed_recyclerview)
     }
 
     private fun subscribeForFeedItems() {
-        viewModel.subscribeForPosts()?.observe(this, Observer<List<CompanyDatabaseEntity>> {
+//        viewModel.subscribeForPosts()?.observe(this) {
+        viewModel.subscribeForFakePosts()?.observe(this) {
             setViewState(STATE_CONTENT_LOADED)
 
             // If there are no items in the DB, then upload the default set.
-            if (it.isEmpty()) viewModel.loadDefaultCompaniesSet(this)
+//            if (it.isEmpty()) viewModel.loadDefaultCompaniesSet(this)
 
             // Display fetched items
             val sortingOption = SortingOption.valueOf(sorting_spinner.selectedItem as String)
             companiesListAdapter.setItems(it, sortingOption)
 
             updateAverageValues(it, sortingOption)
-        })
+        }
     }
 
     private fun subscribeForUpdateError() {
@@ -191,7 +204,11 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
             }
 
             // Display error message to the user
-            Toast.makeText(this, R.string.network_problem_check_internet_connection, Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                this,
+                R.string.network_problem_check_internet_connection,
+                Toast.LENGTH_LONG
+            ).show()
 
             isLoadingMoreItems = false
         })
@@ -202,7 +219,7 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
     }
 
     private fun setViewState(state: String) {
-        when(state) {
+        when (state) {
             STATE_LOADING_ERROR -> setupLoadingErrorView()
             STATE_CONTENT_LOADED -> setupContentLoadedView()
         }
@@ -231,6 +248,10 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
     }
 
     override fun fetchingError(ticker: String, errorMessage: String?) {
+        displayErrorDialog(ticker, errorMessage)
+    }
+
+    private fun displayErrorDialog(ticker: String, errorMessage: String?) {
         runOnUiThread {
             val builder = AlertDialog.Builder(this)
             val title = getString(R.string.dialogTitle, ticker)

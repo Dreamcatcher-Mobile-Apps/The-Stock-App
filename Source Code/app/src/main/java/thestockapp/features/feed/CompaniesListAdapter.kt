@@ -14,15 +14,15 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 // Main adapter used for managing items list within the main RecyclerView (main feed listed)
-class CompaniesListAdapter(val context: Context) : RecyclerView.Adapter<ViewHolder>() {
+class CompaniesListAdapter(private val context: Context) : RecyclerView.Adapter<ViewHolder>() {
 
     private var companiesList: List<CompanyDatabaseEntity> = ArrayList()
-
-    // Todo: Refactor sortItems and setItems
 
     fun getCurrentlyDisplayedItems(): List<CompanyDatabaseEntity> {
         return companiesList
     }
+
+    // Todo: Refactor sortItems and setItems
 
     fun sortItems(sortingOption: SortingOption) {
         setItems(companiesList, sortingOption)
@@ -82,7 +82,7 @@ class CompaniesListAdapter(val context: Context) : RecyclerView.Adapter<ViewHold
         holder.picture.setColorFilter(Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256)))
 
         // Set the letter in circle
-        holder.tickerLetter.text = ticker.first().uppercase().toString()
+        holder.tickerLetter.text = ticker.first().uppercase()
 
         // Set data within the holder
         holder.ticker.text = ticker
