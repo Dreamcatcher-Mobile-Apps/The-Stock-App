@@ -101,55 +101,27 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
         values: List<CompanyDatabaseEntity>,
         sortingOption: SortingOption
     ) {
+        val averageValue = viewModel.calculateAverageValue(values, sortingOption)
+        val averageValuePositiveOnly = viewModel.calculateAverageValue_positiveOnly(values, sortingOption)
+        val formatter = "%.4f"
+        val averagePrefix: Int
+        val averagePositiveOnlyPrefix: Int
         when (sortingOption) {
             SortingOption.GROSS_PROFIT_LAST_PERIOD -> {
-                val averageGrossProfitPerDollar =
-                    viewModel.calculateAverageValue(values, SortingOption.GROSS_PROFIT_LAST_PERIOD)
-                average.text = getString(
-                    R.string.average_gross_profit_per_dollar,
-                    String.format("%.4f", averageGrossProfitPerDollar)
-                )
-
-                val averageGrossProfitPerDollar_positive = viewModel.calculateAverageValue_positiveOnly(
-                    values,
-                    SortingOption.GROSS_PROFIT_LAST_PERIOD
-                )
-                average_positive.text = getString(
-                    R.string.average_positive_gross_profit_per_dollar,
-                    String.format("%.4f", averageGrossProfitPerDollar_positive)
-                )
+                averagePrefix = R.string.average_gross_profit_per_dollar
+                averagePositiveOnlyPrefix = R.string.average_positive_gross_profit_per_dollar
             }
             SortingOption.NET_INCOME_LAST_PERIOD -> {
-                val averageNetIncomePerDollar =
-                    viewModel.calculateAverageValue(values, SortingOption.NET_INCOME_LAST_PERIOD)
-                average.text = getString(
-                    R.string.average_net_income_per_dollar,
-                    String.format("%.4f", averageNetIncomePerDollar)
-                )
-
-                val averageNetIncomePerDollar_positive =
-                    viewModel.calculateAverageValue_positiveOnly(values, SortingOption.NET_INCOME_LAST_PERIOD)
-                average_positive.text = getString(
-                    R.string.average_positive_net_income_per_dollar,
-                    String.format("%.4f", averageNetIncomePerDollar_positive)
-                )
+                averagePrefix = R.string.average_net_income_per_dollar
+                averagePositiveOnlyPrefix = R.string.average_positive_net_income_per_dollar
             }
             SortingOption.EPS_PER_1_DOLLAR_SPENT -> {
-                val averageEpsPerDollar =
-                    viewModel.calculateAverageValue(values, SortingOption.EPS_PER_1_DOLLAR_SPENT)
-                average.text = getString(
-                    R.string.average_eps_per_dollar,
-                    String.format("%.4f", averageEpsPerDollar)
-                )
-
-                val averageEpsPerDollar_positive =
-                    viewModel.calculateAverageValue_positiveOnly(values, SortingOption.EPS_PER_1_DOLLAR_SPENT)
-                average_positive.text = getString(
-                    R.string.average_positive_eps_per_dollar,
-                    String.format("%.4f", averageEpsPerDollar_positive)
-                )
+                averagePrefix = R.string.average_eps_per_dollar
+                averagePositiveOnlyPrefix = R.string.average_positive_eps_per_dollar
             }
         }
+        average.text = getString(averagePrefix, String.format(formatter, averageValue))
+        average_positive.text = getString(averagePositiveOnlyPrefix, String.format(formatter, averageValuePositiveOnly))
     }
 
     private fun setupRecyclerView() {
