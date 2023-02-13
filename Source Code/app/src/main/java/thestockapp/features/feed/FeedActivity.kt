@@ -29,9 +29,9 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
 
     private val viewModel: FeedViewModel by viewModels()
     private lateinit var companiesListAdapter: CompaniesListAdapter
-    private var isLoadingMoreItems: Boolean = false
 
-    private val STATE_LOADING_ERROR = "STATE_LOADING_ERROR"
+    private val STATE_LOADING_ERROR_CONTENT_LOADED = "STATE_LOADING_ERROR_CONTENT_LOADED"
+    private val STATE_LOADING_ERROR_NO_CONTENT = "STATE_LOADING_ERROR_NO_CONTENT"
     private val STATE_CONTENT_LOADED = "STATE_CONTENT_LOADED"
 
     @RequiresApi(Build.VERSION_CODES.M)
@@ -123,13 +123,9 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
 
         val simpleItemTouchCallback: ItemTouchHelper.SimpleCallback =
             object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
-                override fun onMove(
-                    recyclerView: RecyclerView,
-                    viewHolder: RecyclerView.ViewHolder,
-                    target: RecyclerView.ViewHolder
-                ): Boolean {
-                    return false
-                }
+
+                override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder
+                ): Boolean { return false }
 
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
                     val ticker = companiesListAdapter.getCompanyIdByPosition(viewHolder.adapterPosition)
@@ -137,8 +133,7 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
                     companiesListAdapter.itemRemoved(viewHolder.adapterPosition)
                 }
             }
-        val itemTouchHelper = ItemTouchHelper(simpleItemTouchCallback)
-        itemTouchHelper.attachToRecyclerView(main_feed_recyclerview)
+        ItemTouchHelper(simpleItemTouchCallback).attachToRecyclerView(main_feed_recyclerview)
     }
 
     private fun subscribeForFeedItems() {
@@ -150,27 +145,47 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
 
     private fun subscribeForUpdateError() {
         viewModel.subscribeForUpdateErrors()?.observe(this) {
-
-            // Case of Network Error if no items have been cached
             if (companiesListAdapter.itemCount == 0) {
-                setViewState(STATE_LOADING_ERROR, null)
+                setViewState(STATE_LOADING_ERROR_NO_CONTENT, null)
+            } else {
+                setViewState(STATE_LOADING_ERROR_CONTENT_LOADED, null)
             }
-
-            // Display error message to the user
-            Toast.makeText(this, R.string.network_problem_check_internet_connection, Toast.LENGTH_LONG).show()
-
-            isLoadingMoreItems = false
         }
     }
 
-    private fun setViewState(state: String, items: List<CompanyDatabaseEntity>?) {
+    // UI State Setting Section
+
+    private fun setViewState(state: String, newItems: List<CompanyDatabaseEntity>?) {
         when (state) {
-            STATE_LOADING_ERROR -> setupLoadingErrorView()
-            STATE_CONTENT_LOADED -> setupContentLoadedView(items!!)
+            STATE_CONTENT_LOADED -> setupContentLoadedView(newItems!!)
+            STATE_LOADING_ERROR_NO_CONTENT -> setupLoadingErrorView_noContent()
+            STATE_LOADING_ERROR_CONTENT_LOADED -> setupLoadingErrorView_contentLoaded()
         }
     }
 
-    private fun setupLoadingErrorView() {
+    private fun setupContentLoadedView(items: List<CompanyDatabaseEntity>) {
+        // Hide the loading view
+        loading_container.visibility = View.GONE
+        appbar_container.visibility = View.VISIBLE
+
+        // If there are no items in the DB, then upload the default set.
+        // But not when we use fake dataset - therefore commented out.
+        //if (items.isEmpty()) viewModel.loadDefaultCompaniesSet(this)
+
+        // Display fetched items
+        SortingOption.valueOf(sorting_spinner.selectedItem as String).let {
+            companiesListAdapter.setItems(items, it)
+            updateAverageValues(items, it)
+        }
+    }
+
+    private fun setupLoadingErrorView_contentLoaded() {
+
+        // Display error message to the user
+        Toast.makeText(this, R.string.network_problem_check_internet_connection, Toast.LENGTH_LONG).show()
+    }
+
+    private fun setupLoadingErrorView_noContent() {
         // Stop the loading progress bar (circle)
         progressBar.visibility = View.INVISIBLE
 
@@ -185,23 +200,12 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
             // Re-display the loading progress bar (circle)
             progressBar.visibility = View.VISIBLE
         }
+
+        // Display error message to the user
+        Toast.makeText(this, R.string.network_problem_check_internet_connection, Toast.LENGTH_LONG).show()
     }
 
-    private fun setupContentLoadedView(items: List<CompanyDatabaseEntity>) {
-        // Hide the loading view
-        loading_container.visibility = View.GONE
-        appbar_container.visibility = View.VISIBLE
-
-        // If there are no items in the DB, then upload the default set.
-        // But not when we use fake dataset - therefore commented out.
-        //if (items.isEmpty()) viewModel.loadDefaultCompaniesSet(this)
-
-        // Display fetched items
-        val sortingOption = SortingOption.valueOf(sorting_spinner.selectedItem as String)
-        companiesListAdapter.setItems(items, sortingOption)
-
-        updateAverageValues(items, sortingOption)
-    }
+    // Error Handling Section
 
     override fun fetchingError(ticker: String, errorMessage: String?) {
         displayErrorDialog(ticker, errorMessage)
