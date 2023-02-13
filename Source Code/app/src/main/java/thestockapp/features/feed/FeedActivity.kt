@@ -13,7 +13,6 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -30,7 +29,7 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
 
     private val viewModel: FeedViewModel by viewModels()
     private lateinit var companiesListAdapter: CompaniesListAdapter
-    var isLoadingMoreItems: Boolean = false
+    private var isLoadingMoreItems: Boolean = false
 
     private val STATE_LOADING_ERROR = "STATE_LOADING_ERROR"
     private val STATE_CONTENT_LOADED = "STATE_CONTENT_LOADED"
@@ -58,25 +57,18 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
 
     private fun setupSortingOptions() {
         val optionsList = SortingOption.values().map { it.toString() }
-        val adapter: ArrayAdapter<String> =
-            ArrayAdapter(this, android.R.layout.simple_spinner_item, optionsList)
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, optionsList)
         sorting_spinner.adapter = adapter
         sorting_spinner.onItemSelectedListener = (object : OnItemSelectedListener {
-            override fun onItemSelected(
-                parentView: AdapterView<*>?,
-                selectedItemView: View,
-                position: Int,
-                id: Long
-            ) {
+
+            override fun onItemSelected(parentView: AdapterView<*>?, selectedItemView: View, position: Int, id: Long) {
+
                 // Todo: Refactor into using arguments, not seletedItem
                 val sortingOption = SortingOption.valueOf(sorting_spinner.selectedItem as String)
                 companiesListAdapter.sortItems(sortingOption)
 
                 // Todo: Not good solution when we fetch data back from the adapter - refactor in the future.
-                updateAverageValues(
-                    companiesListAdapter.getCurrentlyDisplayedItems(),
-                    sortingOption
-                )
+                updateAverageValues(companiesListAdapter.getCurrentlyDisplayedItems(), sortingOption)
             }
 
             override fun onNothingSelected(parentView: AdapterView<*>?) {}
@@ -125,9 +117,8 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
     }
 
     private fun setupRecyclerView() {
-        val layoutManager = LinearLayoutManager(this)
-        main_feed_recyclerview.layoutManager = layoutManager
         companiesListAdapter = CompaniesListAdapter(this)
+        main_feed_recyclerview.layoutManager = LinearLayoutManager(this)
         main_feed_recyclerview.adapter = companiesListAdapter
 
         val simpleItemTouchCallback: ItemTouchHelper.SimpleCallback =
@@ -141,8 +132,7 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
                 }
 
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
-                    val ticker =
-                        companiesListAdapter.getCompanyIdByPosition(viewHolder.adapterPosition)
+                    val ticker = companiesListAdapter.getCompanyIdByPosition(viewHolder.adapterPosition)
                     viewModel.removeCompany(ticker)
                     companiesListAdapter.itemRemoved(viewHolder.adapterPosition)
                 }
@@ -154,46 +144,29 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
     private fun subscribeForFeedItems() {
 //        viewModel.subscribeForPosts()?.observe(this) {
         viewModel.subscribeForFakePosts()?.observe(this) {
-            setViewState(STATE_CONTENT_LOADED)
-
-            // If there are no items in the DB, then upload the default set.
-//            if (it.isEmpty()) viewModel.loadDefaultCompaniesSet(this)
-
-            // Display fetched items
-            val sortingOption = SortingOption.valueOf(sorting_spinner.selectedItem as String)
-            companiesListAdapter.setItems(it, sortingOption)
-
-            updateAverageValues(it, sortingOption)
+            setViewState(STATE_CONTENT_LOADED, it)
         }
     }
 
     private fun subscribeForUpdateError() {
-        viewModel.subscribeForUpdateErrors()?.observe(this, Observer<Boolean> {
+        viewModel.subscribeForUpdateErrors()?.observe(this) {
 
             // Case of Network Error if no items have been cached
             if (companiesListAdapter.itemCount == 0) {
-                setViewState(STATE_LOADING_ERROR)
+                setViewState(STATE_LOADING_ERROR, null)
             }
 
             // Display error message to the user
-            Toast.makeText(
-                this,
-                R.string.network_problem_check_internet_connection,
-                Toast.LENGTH_LONG
-            ).show()
+            Toast.makeText(this, R.string.network_problem_check_internet_connection, Toast.LENGTH_LONG).show()
 
             isLoadingMoreItems = false
-        })
+        }
     }
 
-    private fun refreshPostsSubscription() {
-//        viewModel.refreshPosts()
-    }
-
-    private fun setViewState(state: String) {
+    private fun setViewState(state: String, items: List<CompanyDatabaseEntity>?) {
         when (state) {
             STATE_LOADING_ERROR -> setupLoadingErrorView()
-            STATE_CONTENT_LOADED -> setupContentLoadedView()
+            STATE_CONTENT_LOADED -> setupContentLoadedView(items!!)
         }
     }
 
@@ -206,17 +179,28 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
 
         // Setup onClick listener that resets the feed data subscription
         tryagain_button.setOnClickListener {
-            refreshPostsSubscription()
+            // Todo. Fix.
+            //refreshPostsSubscription()
 
             // Re-display the loading progress bar (circle)
             progressBar.visibility = View.VISIBLE
         }
     }
 
-    private fun setupContentLoadedView() {
+    private fun setupContentLoadedView(items: List<CompanyDatabaseEntity>) {
         // Hide the loading view
         loading_container.visibility = View.GONE
         appbar_container.visibility = View.VISIBLE
+
+        // If there are no items in the DB, then upload the default set.
+        // But not when we use fake dataset - therefore commented out.
+        //if (items.isEmpty()) viewModel.loadDefaultCompaniesSet(this)
+
+        // Display fetched items
+        val sortingOption = SortingOption.valueOf(sorting_spinner.selectedItem as String)
+        companiesListAdapter.setItems(items, sortingOption)
+
+        updateAverageValues(items, sortingOption)
     }
 
     override fun fetchingError(ticker: String, errorMessage: String?) {
@@ -226,11 +210,9 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
     private fun displayErrorDialog(ticker: String, errorMessage: String?) {
         runOnUiThread {
             val builder = AlertDialog.Builder(this)
-            val title = getString(R.string.dialogTitle, ticker)
-            builder.setTitle(title)
-            val message = errorMessage ?: getString(R.string.dialogMessage)
-            builder.setMessage(message)
-            val alertDialog: AlertDialog = builder.create()
+            builder.setTitle(getString(R.string.dialogTitle, ticker))
+            builder.setMessage(errorMessage ?: getString(R.string.dialogMessage))
+            val alertDialog = builder.create()
             alertDialog.setCancelable(true)
             alertDialog.show()
         }
