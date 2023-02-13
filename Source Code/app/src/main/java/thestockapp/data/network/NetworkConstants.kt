@@ -1,4 +1,4 @@
-package redditandroidapp.data.network
+package thestockapp.data.network
 
 class NetworkConstants {
 

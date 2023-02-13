@@ -1,7 +1,7 @@
-package redditandroidapp.injection
+package thestockapp.injection
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class RedditAndroidApp : Application()
+class TheStockApp : Application()

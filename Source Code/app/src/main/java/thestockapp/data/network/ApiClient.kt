@@ -1,4 +1,4 @@
-package redditandroidapp.data.network
+package thestockapp.data.network
 
 import retrofit2.Call
 import retrofit2.http.GET

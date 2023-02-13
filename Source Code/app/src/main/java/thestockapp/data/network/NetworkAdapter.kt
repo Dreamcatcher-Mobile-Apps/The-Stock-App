@@ -1,4 +1,4 @@
-package redditandroidapp.data.network
+package thestockapp.data.network
 
 import okhttp3.OkHttpClient.Builder
 import retrofit2.Retrofit

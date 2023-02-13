@@ -1,4 +1,4 @@
-package redditandroidapp.features.feed
+package thestockapp.features.feed
 
 import android.app.AlertDialog
 import android.content.Context
@@ -20,9 +20,9 @@ import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.loading_badge.*
-import redditandroidapp.R
-import redditandroidapp.data.database.CompanyDatabaseEntity
-import redditandroidapp.data.utils.DataFetchingCallback
+import thestockapp.R
+import thestockapp.data.database.CompanyDatabaseEntity
+import thestockapp.data.utils.DataFetchingCallback
 
 
 // Main ('feed') view
@@ -172,7 +172,7 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
             setViewState(STATE_CONTENT_LOADED)
 
             // If there are no items in the DB, then upload the default set.
-            if (it.isEmpty()) loadDefaultCompaniesSet()
+            if (it.isEmpty()) viewModel.loadDefaultCompaniesSet(this)
 
             // Display fetched items
             val sortingOption = SortingOption.valueOf(sorting_spinner.selectedItem as String)
@@ -180,51 +180,6 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
 
             updateAverageValues(it, sortingOption)
         })
-    }
-
-    private fun loadDefaultCompaniesSet() {
-        val defaultCompanies = arrayListOf<String>()
-
-        // Error: incomeStatementResponse size less than 2 or floatSharesResponse is empty
-        //defaultCompanies.add("IMPX")
-
-        defaultCompanies.add("AAPL")
-        defaultCompanies.add("AMZN")
-        defaultCompanies.add("FB")
-        defaultCompanies.add("GOOGL")
-        defaultCompanies.add("IBM")
-        defaultCompanies.add("MSFT")
-        defaultCompanies.add("NFLX")
-        defaultCompanies.add("NVDA")
-        defaultCompanies.add("PYPL")
-        defaultCompanies.add("VZ")
-
-//        defaultCompanies.add("ABBV")
-//        defaultCompanies.add("ALPP")
-//        defaultCompanies.add("AZN")
-//        defaultCompanies.add("BABA")
-//        defaultCompanies.add("BP")
-//        defaultCompanies.add("COIN")
-//        defaultCompanies.add("CXW")
-//        defaultCompanies.add("FDX")
-//        defaultCompanies.add("FNF")
-//        defaultCompanies.add("GD")
-//        defaultCompanies.add("HMC")
-//        defaultCompanies.add("MRNA")
-//        defaultCompanies.add("NIO")
-//        defaultCompanies.add("PLTR")
-//        defaultCompanies.add("PLUG")
-//        defaultCompanies.add("PRU")
-//        defaultCompanies.add("PTON")
-//        defaultCompanies.add("RIVN")
-//        defaultCompanies.add("SQ")
-//        defaultCompanies.add("TM")
-//        defaultCompanies.add("TSLA")
-//        defaultCompanies.add("XPEV")
-
-        defaultCompanies.forEach {
-            viewModel.addCompany(it, activity)
-        }
     }
 
     private fun subscribeForUpdateError() {

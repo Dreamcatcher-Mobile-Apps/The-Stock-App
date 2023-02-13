@@ -1,4 +1,4 @@
-package redditandroidapp.data.network
+package thestockapp.data.network
 
 import android.util.Log
 import androidx.lifecycle.LiveData

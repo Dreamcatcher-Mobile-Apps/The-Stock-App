@@ -1,4 +1,4 @@
-package redditandroidapp.features.feed
+package thestockapp.features.feed
 
 import android.content.Context
 import android.graphics.Color
@@ -7,8 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.main_feed_list_item.view.*
-import redditandroidapp.R
-import redditandroidapp.data.database.CompanyDatabaseEntity
+import thestockapp.R
+import thestockapp.data.database.CompanyDatabaseEntity
 import java.text.DecimalFormat
 import java.util.*
 import kotlin.collections.ArrayList

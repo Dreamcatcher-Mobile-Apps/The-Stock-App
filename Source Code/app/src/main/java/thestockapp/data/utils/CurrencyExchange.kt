@@ -1,4 +1,4 @@
-package redditandroidapp.data.utils
+package thestockapp.data.utils
 
 class CurrencyExchange {
 

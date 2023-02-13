@@ -1,18 +1,18 @@
-package redditandroidapp.data.repositories
+package thestockapp.data.repositories
 
 import android.util.Log
 import androidx.lifecycle.LiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import redditandroidapp.data.database.CompaniesDatabaseInteractor
-import redditandroidapp.data.database.CompanyDatabaseEntity
-import redditandroidapp.data.network.CompaniesNetworkInteractor
-import redditandroidapp.data.network.QuarterIncomeStatementGsonModel
-import redditandroidapp.data.network.SharePriceGsonModel
-import redditandroidapp.data.network.SharesFloatGsonModel
-import redditandroidapp.data.utils.CurrencyExchange
-import redditandroidapp.data.utils.DataFetchingCallback
+import thestockapp.data.database.CompaniesDatabaseInteractor
+import thestockapp.data.database.CompanyDatabaseEntity
+import thestockapp.data.network.CompaniesNetworkInteractor
+import thestockapp.data.network.QuarterIncomeStatementGsonModel
+import thestockapp.data.network.SharePriceGsonModel
+import thestockapp.data.network.SharesFloatGsonModel
+import thestockapp.data.utils.CurrencyExchange
+import thestockapp.data.utils.DataFetchingCallback
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response

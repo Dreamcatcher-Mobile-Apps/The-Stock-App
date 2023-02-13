@@ -1,4 +1,4 @@
-package redditandroidapp.injection
+package thestockapp.injection
 
 import android.content.Context
 import androidx.room.Room
@@ -7,12 +7,12 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import redditandroidapp.data.database.CompaniesDatabase
-import redditandroidapp.data.database.CompaniesDatabaseInteractor
-import redditandroidapp.data.network.ApiClient
-import redditandroidapp.data.network.CompaniesNetworkInteractor
-import redditandroidapp.data.network.NetworkAdapter
-import redditandroidapp.data.repositories.CompaniesRepository
+import thestockapp.data.database.CompaniesDatabase
+import thestockapp.data.database.CompaniesDatabaseInteractor
+import thestockapp.data.network.ApiClient
+import thestockapp.data.network.CompaniesNetworkInteractor
+import thestockapp.data.network.NetworkAdapter
+import thestockapp.data.repositories.CompaniesRepository
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)

@@ -1,4 +1,4 @@
-package redditandroidapp.data.database
+package thestockapp.data.database
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
