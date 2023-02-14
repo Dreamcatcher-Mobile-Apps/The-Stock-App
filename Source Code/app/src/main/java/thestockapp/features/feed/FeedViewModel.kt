@@ -14,8 +14,8 @@ import javax.inject.Inject
 class FeedViewModel @Inject constructor(private val companiesRepository: CompaniesRepository)
     : ViewModel(), LifecycleObserver {
 
-    fun subscribeForPosts(): LiveData<List<CompanyDatabaseEntity>>? {
-        return companiesRepository.getAllCompanies()
+    fun subscribeForPosts(callback: DataFetchingCallback): LiveData<List<CompanyDatabaseEntity>>? {
+        return companiesRepository.getAllCompanies(callback)
     }
 
     fun subscribeForFakePosts(): LiveData<List<CompanyDatabaseEntity>>? {
@@ -33,10 +33,6 @@ class FeedViewModel @Inject constructor(private val companiesRepository: Compani
 
     fun removeCompany(ticker: String) {
         companiesRepository.removeCompany(ticker)
-    }
-
-    fun subscribeForUpdateErrors(): LiveData<Boolean>? {
-        return companiesRepository.subscribeForUpdateErrors()
     }
 
     fun loadDefaultCompaniesSet(callback: DataFetchingCallback) {

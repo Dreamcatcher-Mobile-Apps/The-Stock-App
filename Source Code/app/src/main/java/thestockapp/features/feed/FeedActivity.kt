@@ -42,7 +42,6 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
         setupSortingOptions()
         setupAddCompanyButton()
         subscribeForFeedItems()
-        subscribeForUpdateError()
     }
 
     private fun setupSortingOptions() {
@@ -133,16 +132,6 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
         }
     }
 
-    private fun subscribeForUpdateError() {
-        viewModel.subscribeForUpdateErrors()?.observe(this) {
-            if (companiesListAdapter.itemCount == 0) {
-                setViewState(STATE_LOADING_ERROR_NO_CONTENT, null)
-            } else {
-                setViewState(STATE_LOADING_ERROR_CONTENT_LOADED, null)
-            }
-        }
-    }
-
     // UI State Setting Section
 
     private fun setViewState(state: String, newItems: List<CompanyDatabaseEntity>?) {
@@ -186,9 +175,13 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
 
     // Error Handling Section
 
-    // Todo: Not correct! We should set state here.
     override fun fetchingError(ticker: String, errorMessage: String?) {
-        displayErrorDialog(ticker, errorMessage)
+        if (companiesListAdapter.itemCount == 0) {
+            setViewState(STATE_LOADING_ERROR_NO_CONTENT, null)
+        } else {
+            setViewState(STATE_LOADING_ERROR_CONTENT_LOADED, null)
+        }
+//        displayErrorDialog(ticker, errorMessage)
     }
 
     private fun displayToastMessage() {

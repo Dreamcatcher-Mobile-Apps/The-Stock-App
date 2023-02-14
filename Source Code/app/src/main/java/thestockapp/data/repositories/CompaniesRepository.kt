@@ -23,31 +23,21 @@ class CompaniesRepository @Inject constructor(private val networkInteractor: Com
                                               private val databaseInteractor: CompaniesDatabaseInteractor
 ) {
 
-    fun getAllCompanies(): LiveData<List<CompanyDatabaseEntity>>? {
-        updateAllCurrentlyStoredCompanies()
+    fun getAllCompanies(callback: DataFetchingCallback): LiveData<List<CompanyDatabaseEntity>>? {
+        updateAllCurrentlyStoredCompanies(callback)
         return databaseInteractor.getAllCompanies_liveData()
     }
 
-    private fun updateAllCurrentlyStoredCompanies() {
+    private fun updateAllCurrentlyStoredCompanies(callback: DataFetchingCallback) {
         GlobalScope.launch(Dispatchers.IO) {
             databaseInteractor.getAllCompanies()?.forEach {
-                addNewCompany(it.ticker, null)
+                addNewCompany(it.ticker, callback)
             }
         }
     }
 
-    fun subscribeForUpdateErrors(): LiveData<Boolean>? {
-        return networkInteractor.getUpdateError()
-    }
-
-    fun setUpdateError(t: Throwable?) {
-        networkInteractor.setUpdateError(t)
-    }
-
-    fun addNewCompany(ticker: String, callback: DataFetchingCallback?) {
-
+    fun addNewCompany(ticker: String, callback: DataFetchingCallback) {
         val formattedTicker = ticker.uppercase()
-
 
         // First API call
         networkInteractor.getIncomeStatementData(formattedTicker).enqueue(object: Callback<List<QuarterIncomeStatementGsonModel>> {
@@ -72,7 +62,6 @@ class CompaniesRepository @Inject constructor(private val networkInteractor: Com
 
                                 val sharePriceResponse = response?.body()
 
-                                ////
                                 if (incomeStatementResponse != null && floatSharesResponse != null && sharePriceResponse != null) {
                                     if (incomeStatementResponse.size == 2 && floatSharesResponse.isNotEmpty()) {
                                         Log.d("DATA FETCHING", "Data fetched successfully")
@@ -84,7 +73,6 @@ class CompaniesRepository @Inject constructor(private val networkInteractor: Com
                                         val recentQuarter_GrossProfit = CurrencyExchange.applyCurrencyExchange(currency ,incomeStatementResponse[0].grossProfit)
                                         val recentQuarter_NetIncome = CurrencyExchange.applyCurrencyExchange(currency ,incomeStatementResponse[0].netIncome)
                                         val eps = CurrencyExchange.applyCurrencyExchange(currency ,incomeStatementResponse[0].eps)
-
                                         val today_OutstandingShares = floatSharesResponse[0].outstandingShares
                                         val today_SharePrice = sharePriceResponse[0].sharePrice
 
@@ -100,69 +88,54 @@ class CompaniesRepository @Inject constructor(private val networkInteractor: Com
                                         val newCompany = CompanyDatabaseEntity(
                                                 ticker = ticker,
                                                 incomeStatementDate = fillingDate,
-
                                                 previousQuarter_GrossProfit = previousQuarter_GrossProfit,
                                                 previousQuarter_NetIncome = previousQuarter_NetIncome,
-
                                                 recentQuarter_GrossProfit = recentQuarter_GrossProfit,
                                                 recentQuarter_NetIncome = recentQuarter_NetIncome,
-
                                                 eps = eps,
-
                                                 today_OutstandingShares = today_OutstandingShares,
                                                 today_SharePrice = today_SharePrice
                                         )
                                         databaseInteractor.addNewCompany(newCompany)
                                     } else {
                                         val message = "incomeStatementResponse size less than 2 or floatSharesResponse is empty"
-                                        callback?.fetchingError(ticker, message)
-                                        setUpdateError(null)
+                                        callback.fetchingError(ticker, message)
                                         Log.e("DATA FETCHING", "Data fetching error - data incomplete")
                                     }
                                 } else {
                                     val message = "lack of incomeStatementResponse or floatSharesResponse or sharePriceResponse"
-                                    callback?.fetchingError(ticker, message)
-                                    setUpdateError(null)
+                                    callback.fetchingError(ticker, message)
                                     Log.e("DATA FETCHING", "Data fetching error - data incomplete")
                                 }
 
                             }
 
                             override fun onFailure(call: Call<List<SharePriceGsonModel>>?, t: Throwable?) {
-                                callback?.fetchingError(ticker, t?.message)
-                                setUpdateError(t)
-                                Log.e("DATA FETCHING", "Data fetching error - call 3")
-                                t?.message?.let {
-                                    Log.e("DATA FETCHING", ("Data fetching error - call 3 error: " + it))
-                                }
+                                callback.fetchingError(ticker, t?.message)
+                                logError(3, t)
                             }
                         })
-
-
                     }
 
                     override fun onFailure(call: Call<List<SharesFloatGsonModel>>?, t: Throwable?) {
-                        callback?.fetchingError(ticker, t?.message)
-                        setUpdateError(t)
-                        Log.e("DATA FETCHING", "Data fetching error - call 2")
-                        t?.message?.let {
-                            Log.e("DATA FETCHING", ("Data fetching error - call 2 error: " + it))
-                        }
+                        callback.fetchingError(ticker, t?.message)
+                        logError(2, t)
                     }
                 })
-
-
             }
 
             override fun onFailure(call: Call<List<QuarterIncomeStatementGsonModel>>?, t: Throwable?) {
-                callback?.fetchingError(ticker, t?.message)
-                setUpdateError(t)
-                Log.e("DATA FETCHING", "Data fetching error - call 1")
-                t?.message?.let {
-                    Log.e("DATA FETCHING", ("Data fetching error - call 1 error: " + it))
-                }
+                callback.fetchingError(ticker, t?.message)
+                logError(1, t)
             }
         })
+    }
+
+    private fun logError(callNumber: Int, throwable: Throwable?) {
+        Log.e("DATA FETCHING", "Data fetching error - call $callNumber")
+        throwable?.message?.let {
+            Log.e("DATA FETCHING", ("Data fetching error - call $callNumber error message: " + it))
+        }
     }
 
     fun removeCompany(ticker: String) {
