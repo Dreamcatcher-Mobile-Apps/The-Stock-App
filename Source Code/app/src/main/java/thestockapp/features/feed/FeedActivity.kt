@@ -38,20 +38,10 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        // Initialize RecyclerView (feed items)
         setupRecyclerView()
-
-        // Initialize sorting spinner
         setupSortingOptions()
-
-        // Initialize adding company button
         setupAddCompanyButton()
-
-        // Fetch feed items from the back-end and load them into the view
         subscribeForFeedItems()
-
-        // Catch and handle potential update (e.g. network) issues
         subscribeForUpdateError()
     }
 
@@ -180,35 +170,29 @@ class FeedActivity : AppCompatActivity(), DataFetchingCallback {
     }
 
     private fun setupLoadingErrorView_contentLoaded() {
-
-        // Display error message to the user
-        Toast.makeText(this, R.string.network_problem_check_internet_connection, Toast.LENGTH_LONG).show()
+        displayToastMessage()
     }
 
     private fun setupLoadingErrorView_noContent() {
-        // Stop the loading progress bar (circle)
         progressBar.visibility = View.INVISIBLE
-
-        // Display "Try Again" button
         tryagain_button.visibility = View.VISIBLE
-
-        // Setup onClick listener that resets the feed data subscription
         tryagain_button.setOnClickListener {
-            // Todo. Fix.
-            //refreshPostsSubscription()
-
-            // Re-display the loading progress bar (circle)
+            // Todo. Fix:
+            //  refreshPostsSubscription()
             progressBar.visibility = View.VISIBLE
         }
-
-        // Display error message to the user
-        Toast.makeText(this, R.string.network_problem_check_internet_connection, Toast.LENGTH_LONG).show()
+        displayToastMessage()
     }
 
     // Error Handling Section
 
+    // Todo: Not correct! We should set state here.
     override fun fetchingError(ticker: String, errorMessage: String?) {
         displayErrorDialog(ticker, errorMessage)
+    }
+
+    private fun displayToastMessage() {
+        Toast.makeText(this, R.string.network_problem_check_internet_connection, Toast.LENGTH_LONG).show()
     }
 
     private fun displayErrorDialog(ticker: String, errorMessage: String?) {
